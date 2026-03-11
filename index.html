@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DA Carousel Generator – AI Powered</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#04040e;color:#e8f0ff;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.018) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* API KEY SCREEN */
+#apiScreen{position:fixed;inset:0;background:#04040e;z-index:100;display:flex;align-items:center;justify-content:center;}
+.api-box{background:#0d0d20;border:1px solid rgba(0,229,255,0.2);border-radius:18px;padding:36px;max-width:460px;width:90%;text-align:center;}
+.api-logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#00e5ff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 18px;}
+.api-title{font-size:20px;font-weight:800;margin-bottom:6px;}
+.api-title span{color:#00e5ff;}
+.api-sub{font-size:11px;color:#555;font-family:monospace;margin-bottom:22px;line-height:1.8;}
+.api-input-wrap{position:relative;margin-bottom:14px;}
+.api-input{width:100%;background:#060614;border:1px solid #22223a;color:#e8f0ff;border-radius:10px;padding:12px 44px 12px 14px;font-size:13px;outline:none;font-family:monospace;letter-spacing:1px;}
+.api-input:focus{border-color:#00e5ff;}
+.api-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#555;font-size:16px;user-select:none;}
+.api-steps{text-align:left;background:#060614;border-radius:10px;padding:14px;margin-bottom:18px;}
+.api-step{font-size:10px;color:rgba(200,215,255,0.6);line-height:2;font-family:monospace;}
+.api-step a{color:#00e5ff;text-decoration:none;}
+.btn-api{width:100%;background:linear-gradient(135deg,#00e5ff,#7c3aed);color:#000;font-weight:800;font-size:14px;padding:13px;border-radius:10px;border:none;cursor:pointer;}
+.btn-api:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,229,255,0.3);}
+.api-note{font-size:9px;color:#333;font-family:monospace;margin-top:10px;line-height:1.6;}
+
+/* HEADER */
+.hdr{background:#08081a;border-bottom:1px solid rgba(0,229,255,0.1);padding:13px 22px;display:flex;align-items:center;gap:13px;flex-shrink:0;}
+.hlogo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#00e5ff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.htitle{font-weight:800;font-size:15px;letter-spacing:-.3px;}
+.htitle span{color:#00e5ff;}
+.hsub{font-size:9px;color:#444;font-family:monospace;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.hbadge{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00e5ff;font-family:monospace;font-size:9px;padding:4px 12px;border-radius:20px;display:none;}
+.btn-reset-key{background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.2);color:#ff6b6b;font-family:monospace;font-size:9px;padding:4px 10px;border-radius:20px;cursor:pointer;}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+/* SIDEBAR */
+.sidebar{width:272px;background:#08081a;border-right:1px solid rgba(0,229,255,0.08);padding:16px;display:flex;flex-direction:column;gap:13px;overflow-y:auto;flex-shrink:0;}
+.sec-lbl{font-size:8px;font-family:monospace;color:#00e5ff;letter-spacing:2px;text-transform:uppercase;}
+input,textarea,select{width:100%;background:#0d0d20;border:1px solid #1e1e3a;color:#e8f0ff;border-radius:8px;padding:9px 11px;font-size:12px;outline:none;font-family:inherit;transition:border-color .2s;}
+input:focus,textarea:focus,select:focus{border-color:#00e5ff;}
+textarea{resize:vertical;min-height:60px;}
+.inp-lbl{font-size:9px;color:#555;font-family:monospace;margin-bottom:6px;}
+.quick-wrap{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.qtag{padding:3px 8px;border-radius:20px;background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.15);color:#00e5ff;font-family:monospace;font-size:7.5px;cursor:pointer;}
+.qtag:hover{background:rgba(0,229,255,0.15);}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.t-btn{padding:8px 4px;border-radius:8px;border:2px solid #1e1e3a;cursor:pointer;transition:all .15s;}
+.t-name{font-size:9px;font-weight:700;font-family:monospace;}
+.t-dots{display:flex;gap:3px;margin-top:4px;justify-content:center;}
+.t-dot{height:3px;border-radius:2px;}
+.btn-gen{width:100%;background:linear-gradient(135deg,#00e5ff,#7c3aed);color:#000;font-weight:800;font-size:13px;padding:13px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;}
+.btn-gen:disabled{opacity:.5;cursor:not-allowed;}
+.btn-gen:hover:not(:disabled){box-shadow:0 8px 24px rgba(0,229,255,0.3);}
+.btn-dl{width:100%;background:#10b981;color:#000;font-weight:800;font-size:13px;padding:13px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;display:none;}
+.btn-dl:disabled{opacity:.5;cursor:not-allowed;}
+.btn-dl:hover:not(:disabled){box-shadow:0 8px 24px rgba(16,185,129,0.35);}
+.status-el{font-family:monospace;font-size:10px;text-align:center;line-height:1.6;display:none;padding:8px;background:rgba(0,0,0,0.3);border-radius:8px;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#04040e;}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.empty-icon{font-size:50px;opacity:.3;}
+.empty-txt{font-family:monospace;font-size:12px;color:#333;text-align:center;line-height:2;}
+.quick-topics{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:520px;}
+.qtopic{padding:5px 12px;border-radius:20px;background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.15);color:#00e5ff;font-family:monospace;font-size:9px;cursor:pointer;}
+.qtopic:hover{background:rgba(0,229,255,0.14);}
+.loading-state{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.ldots{display:flex;gap:7px;}
+.ldot{width:9px;height:9px;border-radius:50%;background:#00e5ff;animation:blink 1.2s infinite;}
+.ldot:nth-child(2){animation-delay:.2s}.ldot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2;transform:scale(.65)}50%{opacity:1;transform:scale(1)}}
+.big-preview{flex:1;display:none;align-items:center;justify-content:center;padding:24px;background:#030310;overflow:hidden;}
+.thumb-strip{border-top:1px solid rgba(0,229,255,0.08);padding:10px 14px;display:none;gap:8px;overflow-x:auto;background:#08081a;align-items:center;flex-shrink:0;}
+.thumb-wrap{position:relative;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.thumb-num{position:absolute;top:-6px;left:-6px;z-index:5;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:8px;color:#000;font-weight:700;}
+
+/* SLIDE */
+.slide{position:relative;overflow:hidden;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- API KEY SCREEN -->
+  <div id="apiScreen">
+    <div class="api-box">
+      <div class="api-logo">📊</div>
+      <div class="api-title">DA <span>Carousel</span> Generator</div>
+      <div class="api-sub">Apni Groq API Key enter karo (Free hai!)<br>Ek baar enter karo — save ho jayegi</div>
+
+      <div class="api-steps">
+        <div class="api-step">1. Jao → <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></div>
+        <div class="api-step">2. "Create API Key" click karo</div>
+        <div class="api-step">3. Key copy karo (gsk_...)</div>
+        <div class="api-step">4. Neeche paste karo</div>
+      </div>
+
+      <div class="api-input-wrap">
+        <input type="password" id="apiKeyInp" class="api-input" placeholder="gsk_...">
+        <span class="api-eye" onclick="toggleEye()">👁️</span>
+      </div>
+
+      <button class="btn-api" onclick="saveKey()">✅ Save & Start</button>
+      <div class="api-note">🔒 Key sirf aapke browser mein store hogi (localStorage)<br>Koi server pe nahi jayegi</div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hlogo">📊</div>
+    <div>
+      <div class="htitle">Data Analytics <span>Carousel</span> Generator</div>
+      <div class="hsub">AI Powered · LinkedIn Viral Content · PDF Export</div>
+    </div>
+    <div class="hright">
+      <div class="hbadge" id="badge">0 slides</div>
+      <button class="btn-reset-key" onclick="resetKey()">🔑 Change Key</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sec-lbl">// Settings</div>
+
+      <div>
+        <div class="inp-lbl">Topic</div>
+        <input id="topicInp" placeholder="e.g. Top 5 SQL Tips for Data Analysts" onkeydown="if(event.key==='Enter')generate()">
+        <div class="quick-wrap" id="quickWrap"></div>
+      </div>
+
+      <div>
+        <div class="inp-lbl">Your Name</div>
+        <input id="authorInp" value="Ayush | Data Analyst">
+      </div>
+
+      <div>
+        <div class="inp-lbl">Number of Slides</div>
+        <select id="countSel">
+          <option value="5">5 slides</option>
+          <option value="7" selected>7 slides</option>
+          <option value="8">8 slides</option>
+          <option value="10">10 slides</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="inp-lbl">Color Theme</div>
+        <div class="theme-grid" id="themeGrid"></div>
+      </div>
+
+      <div>
+        <div class="inp-lbl">Extra Instructions <span style="color:#333">(optional)</span></div>
+        <textarea id="extraInp" placeholder="e.g. beginner level, add code examples..."></textarea>
+      </div>
+
+      <button class="btn-gen" id="genBtn" onclick="generate()">⚡ Generate Carousel</button>
+      <button class="btn-dl" id="dlBtn" onclick="downloadPDF()">⬇ Download All Slides (PDF)</button>
+      <div class="status-el" id="statusEl"></div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="mainArea">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🗂️</div>
+        <div class="empty-txt">Topic daalo → ⚡ Generate<br>Slides preview karo → ⬇ PDF download karo</div>
+        <div class="quick-topics" id="quickTopics"></div>
+      </div>
+      <div class="loading-state" id="loadingState">
+        <div style="font-size:42px">✨</div>
+        <div style="font-family:monospace;font-size:13px;color:#00e5ff">AI is crafting your carousel...</div>
+        <div class="ldots"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div>
+      </div>
+      <div class="big-preview" id="bigPreview"></div>
+      <div class="thumb-strip" id="thumbStrip"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── THEMES ───
+const THEMES = {
+  cyber:  {bg:"#03030e",accent:"#00e5ff",accent2:"#7c3aed",text:"#e8f0ff",muted:"rgba(200,215,255,0.6)",border:"rgba(0,229,255,0.15)",tag:"rgba(0,229,255,0.12)",tagB:"rgba(0,229,255,0.3)"},
+  ember:  {bg:"#0e0400",accent:"#ff6b35",accent2:"#ff0055",text:"#fff0e8",muted:"rgba(255,220,200,0.6)",border:"rgba(255,107,53,0.15)",tag:"rgba(255,107,53,0.12)",tagB:"rgba(255,107,53,0.3)"},
+  forest: {bg:"#010e04",accent:"#00e676",accent2:"#00bcd4",text:"#e8fff0",muted:"rgba(200,255,220,0.6)",border:"rgba(0,230,118,0.15)",tag:"rgba(0,230,118,0.12)",tagB:"rgba(0,230,118,0.3)"},
+  royal:  {bg:"#07030f",accent:"#c084fc",accent2:"#f472b6",text:"#f0e8ff",muted:"rgba(220,200,255,0.6)",border:"rgba(192,132,252,0.15)",tag:"rgba(192,132,252,0.12)",tagB:"rgba(192,132,252,0.3)"},
+  gold:   {bg:"#0a0700",accent:"#fbbf24",accent2:"#f97316",text:"#fff8e8",muted:"rgba(255,240,200,0.6)",border:"rgba(251,191,36,0.15)",tag:"rgba(251,191,36,0.12)",tagB:"rgba(251,191,36,0.3)"},
+  ice:    {bg:"#00050f",accent:"#38bdf8",accent2:"#818cf8",text:"#e8f4ff",muted:"rgba(200,230,255,0.6)",border:"rgba(56,189,248,0.15)",tag:"rgba(56,189,248,0.12)",tagB:"rgba(56,189,248,0.3)"},
+};
+const THEME_META = [
+  {id:"cyber",label:"Cyber",from:"#03030e",to:"#00e5ff"},
+  {id:"ember",label:"Ember",from:"#0e0400",to:"#ff6b35"},
+  {id:"forest",label:"Forest",from:"#010e04",to:"#00e676"},
+  {id:"royal",label:"Royal",from:"#07030f",to:"#c084fc"},
+  {id:"gold",label:"Gold",from:"#0a0700",to:"#fbbf24"},
+  {id:"ice",label:"Ice",from:"#00050f",to:"#38bdf8"},
+];
+const QUICK_TOPICS = [
+  "Top 5 SQL Tips for Data Analysts",
+  "Python Pandas Tricks You Must Know",
+  "How to Build a Data Portfolio",
+  "Power BI vs Tableau: Which to Learn?",
+  "SQL Window Functions Explained",
+  "How to Get Your First DA Job",
+  "Data Cleaning Best Practices",
+  "Excel Tips Every Analyst Should Know",
+];
+
+let selectedTheme = "cyber";
+let slidesData = [];
+let activeIdx = 0;
+
+// ─── API KEY MANAGEMENT ───
+function checkKey() {
+  const key = localStorage.getItem("da_api_key");
+  if (key && key.startsWith("sk-")) {
+    document.getElementById("apiScreen").style.display = "none";
+  }
+}
+function saveKey() {
+  const key = document.getElementById("apiKeyInp").value.trim();
+  if (!key.startsWith("gsk_")) { alert("Invalid Groq API key! It should start with 'gsk_'"); return; }
+  localStorage.setItem("da_api_key", key);
+  document.getElementById("apiScreen").style.display = "none";
+}
+function resetKey() {
+  if (confirm("API key remove karna chahte ho?")) {
+    localStorage.removeItem("da_api_key");
+    document.getElementById("apiScreen").style.display = "flex";
+    document.getElementById("apiKeyInp").value = "";
+  }
+}
+function getKey() { return localStorage.getItem("da_api_key") || ""; }
+function toggleEye() {
+  const inp = document.getElementById("apiKeyInp");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+
+// ─── INIT UI ───
+function initUI() {
+  checkKey();
+
+  // Quick tags in sidebar
+  const qw = document.getElementById("quickWrap");
+  QUICK_TOPICS.slice(0,4).forEach(tp => {
+    const s = document.createElement("span");
+    s.className = "qtag";
+    s.textContent = tp.slice(0,22)+"…";
+    s.onclick = () => document.getElementById("topicInp").value = tp;
+    qw.appendChild(s);
+  });
+
+  // Quick topics empty state
+  const qt = document.getElementById("quickTopics");
+  QUICK_TOPICS.forEach(tp => {
+    const s = document.createElement("span");
+    s.className = "qtopic";
+    s.textContent = tp;
+    s.onclick = () => document.getElementById("topicInp").value = tp;
+    qt.appendChild(s);
+  });
+
+  // Theme grid
+  const tg = document.getElementById("themeGrid");
+  THEME_META.forEach(tm => {
+    const btn = document.createElement("button");
+    btn.className = "t-btn";
+    btn.id = "tbtn_"+tm.id;
+    btn.style.cssText = `background:linear-gradient(135deg,${tm.from},${tm.to}22);border-color:${tm.id===selectedTheme?THEMES[tm.id].accent:"#1e1e3a"}`;
+    btn.innerHTML = `<div class="t-name" style="color:${THEMES[tm.id].accent}">${tm.label}</div><div class="t-dots"><div class="t-dot" style="width:10px;background:${THEMES[tm.id].accent}"></div><div class="t-dot" style="width:7px;background:${THEMES[tm.id].accent2}"></div></div>`;
+    btn.onclick = () => {
+      selectedTheme = tm.id;
+      THEME_META.forEach(t2 => {
+        document.getElementById("tbtn_"+t2.id).style.borderColor = t2.id===selectedTheme ? THEMES[t2.id].accent : "#1e1e3a";
+      });
+      if (slidesData.length) renderAll();
+    };
+    tg.appendChild(btn);
+  });
+}
+
+// ─── SLIDE BUILDER ───
+function buildSlide(s, idx, total, themeKey, px) {
+  const t = THEMES[themeKey] || THEMES.cyber;
+  const sc = px / 400;
+
+  const slide = document.createElement("div");
+  slide.className = "slide";
+  slide.style.cssText = `width:${px}px;height:${px}px;border-radius:${14*sc}px;background:${t.bg};box-shadow:0 8px 32px rgba(0,0,0,0.7),0 0 0 1px ${t.border};`;
+
+  slide.innerHTML = `
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 85% 12%,${t.accent}1e 0%,transparent 55%);pointer-events:none"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 15% 88%,${t.accent2}14 0%,transparent 50%);pointer-events:none"></div>
+    <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.22" viewBox="0 0 400 400" preserveAspectRatio="none">
+      <defs><pattern id="g${idx}${themeKey}${px}" width="36" height="36" patternUnits="userSpaceOnUse">
+        <path d="M 36 0 L 0 0 0 36" fill="none" stroke="${t.accent}" stroke-width="0.4"/>
+      </pattern></defs>
+      <rect width="100%" height="100%" fill="url(#g${idx}${themeKey}${px})"/>
+    </svg>
+    <div style="position:absolute;top:0;left:0;right:0;height:${3*sc}px;background:linear-gradient(90deg,${t.accent},${t.accent2},transparent);pointer-events:none"></div>
+  `;
+
+  const inner = document.createElement("div");
+  inner.style.cssText = `position:absolute;inset:0;padding:${26*sc}px;display:flex;flex-direction:column;`;
+
+  const tag = `<div style="display:inline-flex;align-items:center;gap:${4*sc}px;padding:${3*sc}px ${9*sc}px;border-radius:20px;background:${t.tag};border:1px solid ${t.tagB};color:${t.accent};font-family:monospace;font-size:${7.5*sc}px;letter-spacing:1px;text-transform:uppercase;margin-bottom:${10*sc}px;width:fit-content"><div style="width:${4*sc}px;height:${4*sc}px;border-radius:50%;background:${t.accent}"></div>${s.tag||'INSIGHT'}</div>`;
+  const hr = `<div style="width:${30*sc}px;height:${3*sc}px;border-radius:2px;background:linear-gradient(90deg,${t.accent},${t.accent2});margin-bottom:${10*sc}px"></div>`;
+  const footer = `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:${10*sc}px;padding-top:${8*sc}px;border-top:1px solid ${t.border}"><span style="font-family:monospace;font-size:${7*sc}px;color:${t.muted}">${s.author||'Data Analyst'}</span><span style="font-family:monospace;font-size:${7*sc}px;color:${t.muted};opacity:.6">${idx+1} / ${total}</span></div>`;
+
+  if (s.type==="cover") {
+    inner.innerHTML = tag + `<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:${8*sc}px"><div style="font-size:${17*sc}px;font-weight:800;color:${t.text};line-height:1.2;letter-spacing:-.3px;margin-bottom:${7*sc}px">${s.title}</div>${hr}<div style="font-size:${10*sc}px;color:${t.muted};line-height:1.65">${s.body}</div><div style="display:flex;gap:${5*sc}px;flex-wrap:wrap;margin-top:${4*sc}px">${["Swipe →","Data Analytics","Must Read"].map(c=>`<span style="padding:3px ${7*sc}px;border-radius:6px;background:${t.tag};border:1px solid ${t.tagB};color:${t.accent};font-family:monospace;font-size:${7.5*sc}px">${c}</span>`).join("")}</div></div>` + footer;
+  } else if (s.type==="list" && s.bullets) {
+    const bullets = s.bullets.map((b,bi)=>`<div style="display:flex;align-items:flex-start;gap:${7*sc}px;font-size:${9.5*sc}px;line-height:1.5"><div style="width:${15*sc}px;height:${15*sc}px;border-radius:4px;background:linear-gradient(135deg,${t.accent},${t.accent2});flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:${7.5*sc}px;font-weight:800;color:#000;margin-top:1px">${bi+1}</div><span style="color:${t.text};opacity:.88">${b}</span></div>`).join("");
+    inner.innerHTML = tag + `<div style="font-size:${13*sc}px;font-weight:800;color:${t.text};line-height:1.2;margin-bottom:${7*sc}px">${s.title}</div>${hr}<div style="flex:1;display:flex;flex-direction:column;gap:${7*sc}px">${bullets}</div>` + footer;
+  } else if (s.type==="stats" && s.stats) {
+    const stats = s.stats.map(st=>`<div style="flex:1;border-radius:${10*sc}px;padding:${10*sc}px ${6*sc}px;text-align:center;background:${t.accent}0f;border:1px solid ${t.border}"><div style="font-size:${19*sc}px;font-weight:800;font-family:monospace;color:${t.accent};line-height:1;margin-bottom:${3*sc}px">${st.num}</div><div style="font-size:${7*sc}px;color:${t.muted};text-transform:uppercase;letter-spacing:.5px">${st.label}</div></div>`).join("");
+    inner.innerHTML = tag + `<div style="font-size:${13*sc}px;font-weight:800;color:${t.text};line-height:1.2;margin-bottom:${7*sc}px">${s.title}</div>${hr}<div style="font-size:${10*sc}px;color:${t.muted};line-height:1.6;margin-bottom:${10*sc}px">${s.body}</div><div style="display:flex;gap:${7*sc}px;flex:1;align-items:center">${stats}</div>` + footer;
+  } else if (s.type==="chart" && s.chartData) {
+    const bars = s.chartData.map(d=>`<div style="display:flex;align-items:center;gap:${7*sc}px"><span style="font-family:monospace;font-size:${8*sc}px;color:${t.muted};width:${55*sc}px;flex-shrink:0">${d.label}</span><div style="flex:1;height:${7*sc}px;background:${t.accent}18;border-radius:4px;overflow:hidden"><div style="width:${d.value}%;height:100%;background:linear-gradient(90deg,${t.accent},${t.accent2});border-radius:4px"></div></div><span style="font-family:monospace;font-size:${7.5*sc}px;color:${t.muted};width:${26*sc}px;text-align:right">${d.value}%</span></div>`).join("");
+    inner.innerHTML = tag + `<div style="font-size:${13*sc}px;font-weight:800;color:${t.text};line-height:1.2;margin-bottom:${7*sc}px">${s.title}</div>${hr}<div style="flex:1;display:flex;flex-direction:column;gap:${8*sc}px;justify-content:center">${bars}</div>` + footer;
+  } else if (s.type==="cta") {
+    const chips = ["Follow for more","Like & Share","Comment below"].map(c=>`<span style="padding:3px ${7*sc}px;border-radius:6px;background:${t.tag};border:1px solid ${t.tagB};color:${t.accent};font-family:monospace;font-size:${7*sc}px">${c}</span>`).join("");
+    inner.innerHTML = tag + `<div style="flex:1;border-radius:${12*sc}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:${14*sc}px;gap:${8*sc}px;background:${t.tag};border:1px solid ${t.tagB}"><div style="font-size:${28*sc}px">🚀</div><div style="font-size:${14*sc}px;font-weight:800;color:${t.text};line-height:1.25">${s.ctaText||s.title}</div><div style="font-size:${9*sc}px;color:${t.muted};line-height:1.5">${s.ctaSub||s.body}</div><div style="display:flex;gap:${5*sc}px;flex-wrap:wrap;justify-content:center;margin-top:${4*sc}px">${chips}</div></div>` + footer;
+  } else {
+    const chips = s.chips ? `<div style="display:flex;gap:${5*sc}px;flex-wrap:wrap;margin-top:${8*sc}px">${s.chips.map(c=>`<span style="padding:3px ${7*sc}px;border-radius:6px;background:${t.tag};border:1px solid ${t.tagB};color:${t.accent};font-family:monospace;font-size:${7.5*sc}px">${c}</span>`).join("")}</div>` : '';
+    inner.innerHTML = tag + `<div style="font-size:${13*sc}px;font-weight:800;color:${t.text};line-height:1.2;margin-bottom:${7*sc}px">${s.title}</div>${hr}<div style="flex:1;font-size:${10.5*sc}px;color:${t.muted};line-height:1.65">${s.body}</div>${chips}` + footer;
+  }
+
+  slide.appendChild(inner);
+  return slide;
+}
+
+// ─── RENDER ───
+function renderAll() {
+  const t = THEMES[selectedTheme];
+  const bp = document.getElementById("bigPreview");
+  bp.innerHTML = "";
+  bp.appendChild(buildSlide(slidesData[activeIdx], activeIdx, slidesData.length, selectedTheme, 380));
+
+  const ts = document.getElementById("thumbStrip");
+  ts.innerHTML = "";
+  slidesData.forEach((s,i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "thumb-wrap";
+    wrap.style.cssText = `opacity:${i===activeIdx?1:.5};transform:${i===activeIdx?"scale(1.08)":"scale(1)"};outline:${i===activeIdx?`2px solid ${t.accent}`:"none"};border-radius:9px;overflow:hidden;`;
+    const num = document.createElement("div");
+    num.className = "thumb-num";
+    num.style.background = i===activeIdx?t.accent:"#7c3aed";
+    num.textContent = i+1;
+    wrap.appendChild(num);
+    wrap.appendChild(buildSlide(s, i, slidesData.length, selectedTheme, 80));
+    wrap.onclick = () => { activeIdx=i; renderAll(); };
+    ts.appendChild(wrap);
+  });
+}
+
+// ─── GENERATE ───
+async function generate() {
+  const apiKey = getKey();
+  if (!apiKey) { alert("Pehle API key enter karo!"); document.getElementById("apiScreen").style.display="flex"; return; }
+  const topic = document.getElementById("topicInp").value.trim();
+  if (!topic) { alert("Topic daalo pehle!"); return; }
+  const author = document.getElementById("authorInp").value.trim() || "Ayush | Data Analyst";
+  const count = parseInt(document.getElementById("countSel").value);
+  const extra = document.getElementById("extraInp").value.trim();
+
+  const genBtn = document.getElementById("genBtn");
+  genBtn.disabled=true; genBtn.textContent="⏳ AI Generating...";
+  document.getElementById("dlBtn").style.display="none";
+  document.getElementById("emptyState").style.display="none";
+  document.getElementById("loadingState").style.display="flex";
+  document.getElementById("bigPreview").style.display="none";
+  document.getElementById("thumbStrip").style.display="none";
+  setStatus("","");
+
+  const prompt = `You are a LinkedIn viral content expert for Data Analytics. Create a ${count}-slide carousel about: "${topic}".
+${extra?"Extra: "+extra:""}
+Author: ${author}
+
+Return ONLY a JSON array (no markdown, no backticks) with exactly ${count} objects. Each:
+- "type": "cover"|"list"|"stats"|"chart"|"tip"|"point"|"cta"
+- "tag": 2-3 word CAPS label
+- "title": punchy headline under 10 words
+- "body": 1-2 sentences under 22 words
+- "bullets": array 3-4 strings (ONLY "list")
+- "stats": array {num,label} max 3 (ONLY "stats")
+- "chartData": array {label,value 0-100} max 5 (ONLY "chart")
+- "chips": array 3-4 keywords (ONLY "tip")
+- "ctaText": string (ONLY "cta")
+- "ctaSub": string (ONLY "cta")
+RULES: Slide 1=cover, last=cta, include 1 list + 1 stats/chart. Data analytics focused, viral, actionable.
+RETURN ONLY JSON ARRAY.`;
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
+      body:JSON.stringify({model:"llama-3.3-70b-versatile",max_tokens:1500,messages:[{role:"user",content:prompt}]})
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || "API error");
+    }
+    const data = await res.json();
+    let txt = data.choices[0].message.content.replace(/```json|```/g,"").trim();
+    const parsed = JSON.parse(txt);
+    slidesData = parsed.map(s=>({...s,author,total:parsed.length}));
+    activeIdx=0;
+    document.getElementById("loadingState").style.display="none";
+    document.getElementById("bigPreview").style.display="flex";
+    document.getElementById("thumbStrip").style.display="flex";
+    document.getElementById("dlBtn").style.display="block";
+    document.getElementById("badge").style.display="block";
+    document.getElementById("badge").textContent=`${slidesData.length} slides ready`;
+    setStatus(`✅ ${slidesData.length} slides ready! Ab download karo PDF.`,"#10b981");
+    renderAll();
+  } catch(e) {
+    document.getElementById("loadingState").style.display="none";
+    document.getElementById("emptyState").style.display="flex";
+    setStatus("❌ Error: "+e.message,"#fb7185");
+  } finally {
+    genBtn.disabled=false; genBtn.textContent="⚡ Generate Carousel";
+  }
+}
+
+// ─── DOWNLOAD PDF ───
+async function downloadPDF() {
+  if (!slidesData.length) return;
+  const dlBtn = document.getElementById("dlBtn");
+  dlBtn.disabled=true; dlBtn.textContent="⏳ Building PDF...";
+  setStatus("📄 PDF ban raha hai, wait karo...","#00e5ff");
+
+  const offscreen = document.createElement("div");
+  offscreen.style.cssText="position:fixed;left:-9999px;top:0;z-index:-1;display:flex;flex-direction:column;gap:0;";
+  document.body.appendChild(offscreen);
+
+  const fullSlides = slidesData.map((s,i)=>{
+    const el = buildSlide(s,i,slidesData.length,selectedTheme,600);
+    el.style.borderRadius="0";
+    offscreen.appendChild(el);
+    return el;
+  });
+
+  await new Promise(r=>setTimeout(r,700));
+
+  try {
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({orientation:"portrait",unit:"px",format:[600,600]});
+
+    for (let i=0;i<fullSlides.length;i++) {
+      setStatus(`📄 Slide ${i+1}/${slidesData.length} render ho rahi hai...`,"#00e5ff");
+      dlBtn.textContent=`⏳ ${i+1}/${slidesData.length}...`;
+      const canvas = await html2canvas(fullSlides[i],{
+        scale:2,useCORS:true,allowTaint:true,
+        backgroundColor:null,logging:false,
+        width:600,height:600
+      });
+      const img = canvas.toDataURL("image/jpeg",0.95);
+      if (i>0) pdf.addPage([600,600]);
+      pdf.addImage(img,"JPEG",0,0,600,600);
+    }
+
+    const fname = document.getElementById("topicInp").value.trim().replace(/[^a-z0-9]/gi,"_").toLowerCase();
+    pdf.save(`DA_Carousel_${fname}.pdf`);
+    setStatus("✅ PDF system pe download ho gayi! LinkedIn pe upload karo 🚀","#10b981");
+  } catch(e) {
+    setStatus("❌ PDF error. Try again: "+e.message,"#fb7185");
+  } finally {
+    document.body.removeChild(offscreen);
+    dlBtn.disabled=false; dlBtn.textContent="⬇ Download All Slides (PDF)";
+  }
+}
+
+function setStatus(msg,color) {
+  const el=document.getElementById("statusEl");
+  el.textContent=msg; el.style.color=color;
+  el.style.display=msg?"block":"none";
+}
+
+initUI();
+</script>
+</body>
+</html>
