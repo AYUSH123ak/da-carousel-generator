@@ -13,7 +13,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
 
 /* API KEY SCREEN */
-#apiScreen{position:fixed;inset:0;background:#04040e;z-index:100;display:flex;align-items:center;justify-content:center;}
+#apiScreen{position:fixed;inset:0;background:#04040e;z-index:100;display:none;align-items:center;justify-content:center;}
 .api-box{background:#0d0d20;border:1px solid rgba(0,229,255,0.2);border-radius:18px;padding:36px;max-width:460px;width:90%;text-align:center;}
 .api-logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#00e5ff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 18px;}
 .api-title{font-size:20px;font-weight:800;margin-bottom:6px;}
@@ -124,7 +124,7 @@ textarea{resize:vertical;min-height:60px;}
     </div>
     <div class="hright">
       <div class="hbadge" id="badge">0 slides</div>
-      <button class="btn-reset-key" onclick="resetKey()">🔑 Change Key</button>
+      
     </div>
   </div>
 
@@ -220,35 +220,16 @@ let selectedTheme = "cyber";
 let slidesData = [];
 let activeIdx = 0;
 
-// ─── API KEY MANAGEMENT ───
-function checkKey() {
-  const key = localStorage.getItem("da_api_key");
-  if (key && key.startsWith("sk-")) {
-    document.getElementById("apiScreen").style.display = "none";
-  }
-}
-function saveKey() {
-  const key = document.getElementById("apiKeyInp").value.trim();
-  if (!key.startsWith("gsk_")) { alert("Invalid Groq API key! It should start with 'gsk_'"); return; }
-  localStorage.setItem("da_api_key", key);
-  document.getElementById("apiScreen").style.display = "none";
-}
-function resetKey() {
-  if (confirm("API key remove karna chahte ho?")) {
-    localStorage.removeItem("da_api_key");
-    document.getElementById("apiScreen").style.display = "flex";
-    document.getElementById("apiKeyInp").value = "";
-  }
-}
-function getKey() { return localStorage.getItem("da_api_key") || ""; }
-function toggleEye() {
-  const inp = document.getElementById("apiKeyInp");
-  inp.type = inp.type === "password" ? "text" : "password";
-}
+// ══════════════════════════════════════════
+// 👇 SIRF YAHAN APNI GROQ API KEY DAALO
+const GROQ_API_KEY = "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";
+// ══════════════════════════════════════════
+
+function getKey() { return GROQ_API_KEY; }
+function resetKey() {}
 
 // ─── INIT UI ───
 function initUI() {
-  checkKey();
 
   // Quick tags in sidebar
   const qw = document.getElementById("quickWrap");
