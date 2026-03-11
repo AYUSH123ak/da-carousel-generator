@@ -228,7 +228,7 @@ function renderAll(){
 
 async function generate(){
   const apiKey=GROQ_API_KEY;
-  if(!apiKey||apiKey==="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"){alert("Pehle apni Groq API key file mein daalo! GROQ_API_KEY update karo.");return;}
+  if(!apiKey){alert("Pehle apni Groq API key file mein daalo! GROQ_API_KEY update karo.");return;}
   const topic=document.getElementById("topicInp").value.trim();
   if(!topic){alert("Topic daalo pehle!");return;}
   const author=document.getElementById("authorInp").value.trim()||"Ayush | Data Analyst";
